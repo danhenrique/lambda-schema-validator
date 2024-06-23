@@ -1,7 +1,7 @@
 schema = {
     '$schema': 'http://json-schema.org/draft-07/schema#',
-    'title': 'Product',
-    'description': 'A product in the catalog',
+    'title': 'Person',
+    'description': 'A person',
     'type': 'object',
     'properties': {
         'name': {
