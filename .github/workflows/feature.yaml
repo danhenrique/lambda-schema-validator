@@ -1,0 +1,52 @@
+name: Feature
+
+on:
+  push:
+    branches:
+      - 'feature*'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          echo $GITHUB_ENV
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          pytest
+
+      - name: Validate Terraform
+        run: |
+          terraform fmt -check
+          terraform validate
+
+  create-pull-request:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          branch: develop
+          commit-message: Create Pull Request for feature branch
+          title: Pull Request from feature branch
+          body: Auto-generated Pull Request from feature branch
+          labels: feature
