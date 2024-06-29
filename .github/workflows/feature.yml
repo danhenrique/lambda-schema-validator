@@ -1,4 +1,4 @@
-name: Feature
+name: CI Build and Test
 
 on:
   push:
@@ -16,31 +16,38 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.11'
+          python-version: 3.x
+
+      - name: Read Configuration
+        run: |
+          pip install pyyaml
+          python read_config.py
+
+      - name: Debug - Print Environment Variables
+        run: |
+          echo "PYTHON_VERSION=${{ env.PYTHON_VERSION }}"
+          echo "TEST_FOLDER=${{ env.TEST_FOLDER }}"
+          echo "REQUIREMENTS_PROD=${{ env.REQUIREMENTS_PROD }}"
+          echo "REQUIREMENTS_TEST=${{ env.REQUIREMENTS_TEST }}"
+
+      - name: Set up Python (from config)
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
         run: |
-          echo $GITHUB_ENV
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r ${{ env.REQUIREMENTS_PROD }}
 
       - name: Run tests
         run: |
-          pytest
+          pytest ${{ env.TEST_FOLDER }}
 
       - name: Validate Terraform
         run: |
           terraform fmt -check
           terraform validate
-
-  create-pull-request:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: success()
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
