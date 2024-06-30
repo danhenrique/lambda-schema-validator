@@ -15,16 +15,16 @@ env:
   REQUIREMENTS_TEST: "app/requirements-test.txt"
 
 jobs:
-    setup:
+    validate-lambda-code:
         runs-on: ubuntu-latest
         steps:
             - name: Check out repository
               uses: actions/checkout@v2
 
-            - name: Read configuration file
+            - name: Read Configuration
               run: |
                 pip install pyyaml
-                python .github/scripts/read_config.py
+                python .github/scripts/read_config.py            
 
             # - name: Set output variable
             #   id: config
@@ -33,18 +33,6 @@ jobs:
             #     echo "TEST_FOLDER=${{ env.TEST_FOLDER }}" >> "$GITHUB_OUTPUT"
             #     echo "REQUIREMENTS_PROD=${{ env.REQUIREMENTS_PROD }}" >> "$GITHUB_OUTPUT"
             #     echo "REQUIREMENTS_TEST=${{ env.REQUIREMENTS_TEST }}" >> "$GITHUB_OUTPUT"
-
-    test:
-        runs-on: ubuntu-latest
-        needs: setup
-        steps:
-            - name: Check out repository
-              uses: actions/checkout@v2
-
-            - name: Read Configuration
-              run: |
-                pip install pyyaml
-                python .github/scripts/read_config.py
 
             - name: Set up Python (from config)
               uses: actions/setup-python@v2
@@ -60,12 +48,26 @@ jobs:
               run: |
                 pytest ${{ env.TEST_FOLDER }} --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
 
-            - name: Validate Terraform
+    validate-terraform:
+        runs-on: ubuntu-latest
+        steps:
+            # - name: Check out repository
+            #   uses: actions/checkout@v2
+
+            - name: Terraform FMT
               run: |
                 cd infra
                 terraform fmt -check
+
+            - name: Terraform validate
+              run: |
+                cd infra
                 terraform validate
 
+    create-pull-request:
+        runs-on: ubuntu-latest
+        needs: [validate-lambda-code, validate-terraform]
+        steps:
             - name: Create Pull Request
               uses: peter-evans/create-pull-request@v3
               with:
