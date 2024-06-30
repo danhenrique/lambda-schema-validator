@@ -31,7 +31,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: env.PYTHON_VERSION
+          python-version: ${{env.PYTHON_VERSION}}
 
       - name: Set up Python (from config)
         uses: actions/setup-python@v2
