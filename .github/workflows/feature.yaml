@@ -51,8 +51,8 @@ jobs:
     validate-terraform:
         runs-on: ubuntu-latest
         steps:
-            # - name: Check out repository
-            #   uses: actions/checkout@v2
+            - name: Check out repository
+              uses: actions/checkout@v2
 
             - name: Terraform FMT
               run: |
