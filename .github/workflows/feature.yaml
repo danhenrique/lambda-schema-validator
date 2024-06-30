@@ -8,6 +8,12 @@ on:
         - 'feature-**'
         - 'feature_**'
 
+env:
+  PYTHON_VERSION: "3.X"
+  TEST_FOLDER: "another_value"
+  REQUIREMENTS_PROD: "app/requirements.txt"
+  REQUIREMENTS_TEST: "app/requirements-test.txt"
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -27,11 +33,6 @@ jobs:
           echo "TEST_FOLDER=${{ env.TEST_FOLDER }}"
           echo "REQUIREMENTS_PROD=${{ env.REQUIREMENTS_PROD }}"
           echo "REQUIREMENTS_TEST=${{ env.REQUIREMENTS_TEST }}"
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{env.PYTHON_VERSION}}
 
       - name: Set up Python (from config)
         uses: actions/setup-python@v2
