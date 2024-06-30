@@ -5,6 +5,11 @@ terraform {
       version = "~> 5.0"
     }
   }
+  backend "s3" {
+    bucket = "danhenrique-remote-state"
+    key    = "lambda-schema-validator/terraform.tfstate"
+    region = "sa-east-1"
+  }
 }
 
 # Configure the AWS Provider

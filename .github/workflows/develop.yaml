@@ -76,6 +76,23 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: sa-east-1  # Specify your region
 
+      - name: Terraform init
+        run: |
+          cd infra
+          terraform init
+
+      - name: Terraform plan (destroy)
+        if: env.DESTROY == 'true'
+        run: |
+          cd infra
+          terraform plan -destroy -out plan.tfplan
+
+      - name: Terraform plan
+        if: env.DESTROY != 'true'
+        run: |
+          cd infra
+          terraform plan -out plan.tfplan
+
       - name: Apply Terraform
         if: env.DESTROY != 'true'
         run: |
