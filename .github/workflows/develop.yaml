@@ -1,0 +1,90 @@
+name: CI Deploy
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - develop
+
+env:
+  PYTHON_VERSION: "3.X"
+  TEST_FOLDER: "another_value"
+  REQUIREMENTS_PROD: "app/requirements.txt"
+  REQUIREMENTS_TEST: "app/requirements-test.txt"
+  DESTROY: false
+
+jobs:
+  build-and-package:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Read Configuration
+        run: |
+          pip install pyyaml
+          python .github/scripts/read_config.py
+
+      - name: Set up Python (from config)
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          cd app
+          mkdir -p dist
+          pip install -r ${{ env.REQUIREMENTS_PROD }} --target ./dist
+
+      - name: Package Lambda function
+        run: |
+          cd app/dist
+          zip -r9 app.zip .
+
+      - name: Package Lambda function
+        run: |
+          cd app
+          zip -r9 dist/app.zip ./src
+          zip dist/app.zip ./lambda_function.py
+
+      - name: Upload Lambda package artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: lambda.zip
+          path: dist/app.zip
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-package
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+        
+      - name: Download Lambda package artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: lambda.zip
+          path: ./app/dist
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: sa-east-1  # Specify your region
+
+      - name: Apply Terraform
+        if: env.DESTROY != 'true'
+        run: |
+          cd infra
+          terraform apply -auto-approve
+  
+      - name: Destroy Terraform
+        if: env.DESTROY == 'true'
+        run: |
+          cd infra
+          terraform destroy -auto-approve

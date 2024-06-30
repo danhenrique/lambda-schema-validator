@@ -3,3 +3,4 @@ test_folder: 'app'
 requirements:
   production: 'app/requirements.txt'
   test: 'app/requirements.txt'
+destroy: false
