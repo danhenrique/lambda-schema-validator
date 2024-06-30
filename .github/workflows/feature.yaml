@@ -14,6 +14,7 @@ env:
   REQUIREMENTS_PROD: "app/requirements.txt"
   REQUIREMENTS_TEST: "app/requirements-test.txt"
   GH_TOKEN: ${{ github.token }}
+  DESTROY: false
 
 jobs:
     validate-lambda-code:
@@ -25,7 +26,7 @@ jobs:
             - name: Read Configuration
               run: |
                 pip install pyyaml
-                python .github/scripts/read_config.py            
+                python .github/scripts/read_config.py          
 
             # - name: Set output variable
             #   id: config
@@ -36,16 +37,19 @@ jobs:
             #     echo "REQUIREMENTS_TEST=${{ env.REQUIREMENTS_TEST }}" >> "$GITHUB_OUTPUT"
 
             - name: Set up Python (from config)
+              if: env.DESTROY != 'true'
               uses: actions/setup-python@v2
               with:
                 python-version: ${{ env.PYTHON_VERSION }}
 
             - name: Install dependencies
+              if: env.DESTROY != 'true'
               run: |
                 python -m pip install --upgrade pip
                 pip install -r ${{ env.REQUIREMENTS_PROD }}
 
             - name: Run tests
+              if: env.DESTROY != 'true'
               run: |
                 pytest ${{ env.TEST_FOLDER }} --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
 
