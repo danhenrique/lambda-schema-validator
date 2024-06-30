@@ -1,9 +1,12 @@
 name: CI Build and Test
 
 on:
-  push:
-    branches:
-      - 'feature*'
+    push:
+      branches:
+        - 'feature'
+        - 'feature/**'
+        - 'feature-**'
+        - 'feature_**'
 
 jobs:
   build-and-test:
