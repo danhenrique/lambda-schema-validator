@@ -73,11 +73,8 @@ jobs:
         runs-on: ubuntu-latest
         needs: [validate-lambda-code, validate-terraform]
         steps:
+            - name: Check out repository
+              uses: actions/checkout@v2
+              
             - name: Create Pull Request
-              uses: peter-evans/create-pull-request@v3
-              with:
-                branch: develop
-                commit-message: Create Pull Request for feature branch
-                title: Pull Request from feature branch
-                body: Auto-generated Pull Request from feature branch
-                labels: feature
+              run: gh pr create --title "Auto-generated Pull Request" --body "This PR is created automatically by the CI pipeline." --base develop --head ${{ github.ref }}
