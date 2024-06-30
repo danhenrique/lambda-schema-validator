@@ -77,5 +77,7 @@ jobs:
             - name: Check out repository
               uses: actions/checkout@v2
 
-            - name: Create Pull Request
-              run: gh pr create --title "Auto-generated Pull Request" --body "This PR is created automatically by the CI pipeline." --base develop --head ${{ github.ref }}
+            - name: create pull request
+              run: gh pr create -B main -H ${{ github.ref }} --title 'Merge branch_to_merge into base_branch' --body 'Created by Github action'
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
