@@ -53,7 +53,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: lambda.zip
-          path: dist/app.zip
+          path: app/dist/app.zip
 
   deploy:
     runs-on: ubuntu-latest
