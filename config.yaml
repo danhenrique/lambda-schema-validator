@@ -1,5 +1,5 @@
-python_version: '3.8'
-test_folder: 'tests'
+python_version: '3.11'
+test_folder: 'app'
 requirements:
-  production: 'requirements.txt'
-  test: 'requirements-test.txt'
+  production: 'app/requirements.txt'
+  test: 'app/requirements-test.txt'

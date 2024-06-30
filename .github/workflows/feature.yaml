@@ -16,15 +16,10 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
-
       - name: Read Configuration
         run: |
           pip install pyyaml
-          python read_config.py
+          python .github/scripts/read_config.py
 
       - name: Debug - Print Environment Variables
         run: |
@@ -32,6 +27,11 @@ jobs:
           echo "TEST_FOLDER=${{ env.TEST_FOLDER }}"
           echo "REQUIREMENTS_PROD=${{ env.REQUIREMENTS_PROD }}"
           echo "REQUIREMENTS_TEST=${{ env.REQUIREMENTS_TEST }}"
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: env.PYTHON_VERSION
 
       - name: Set up Python (from config)
         uses: actions/setup-python@v2
@@ -49,6 +49,7 @@ jobs:
 
       - name: Validate Terraform
         run: |
+          cd infra
           terraform fmt -check
           terraform validate
 
