@@ -26,13 +26,13 @@ jobs:
                 pip install pyyaml
                 python .github/scripts/read_config.py
 
-            - name: Set output variable
-              id: config
-              run: |
-                echo "PYTHON_VERSION=${{ env.PYTHON_VERSION }}" >> "$GITHUB_OUTPUT"
-                echo "TEST_FOLDER=${{ env.TEST_FOLDER }}" >> "$GITHUB_OUTPUT"
-                echo "REQUIREMENTS_PROD=${{ env.REQUIREMENTS_PROD }}" >> "$GITHUB_OUTPUT"
-                echo "REQUIREMENTS_TEST=${{ env.REQUIREMENTS_TEST }}" >> "$GITHUB_OUTPUT"
+            # - name: Set output variable
+            #   id: config
+            #   run: |
+            #     echo "PYTHON_VERSION=${{ env.PYTHON_VERSION }}" >> "$GITHUB_OUTPUT"
+            #     echo "TEST_FOLDER=${{ env.TEST_FOLDER }}" >> "$GITHUB_OUTPUT"
+            #     echo "REQUIREMENTS_PROD=${{ env.REQUIREMENTS_PROD }}" >> "$GITHUB_OUTPUT"
+            #     echo "REQUIREMENTS_TEST=${{ env.REQUIREMENTS_TEST }}" >> "$GITHUB_OUTPUT"
 
     test:
         runs-on: ubuntu-latest
@@ -46,26 +46,19 @@ jobs:
                 pip install pyyaml
                 python .github/scripts/read_config.py
 
-            - name: Debug - Print Environment Variables
-              run: |
-                echo "PYTHON_VERSION=${{ needs.setup.steps.config.outputs.PYTHON_VERSION }}"
-                echo "TEST_FOLDER=${{ needs.setup.outputs.TEST_FOLDER }}"
-                echo "REQUIREMENTS_PROD=${{ needs.setup.outputs.REQUIREMENTS_PROD }}"
-                echo "REQUIREMENTS_TEST=${{ needs.setup.outputs.REQUIREMENTS_TEST }}"
-
             - name: Set up Python (from config)
               uses: actions/setup-python@v2
               with:
-                python-version: ${{ needs.setup.outputs.PYTHON_VERSION }}
+                python-version: ${{ env.PYTHON_VERSION }}
 
             - name: Install dependencies
               run: |
                 python -m pip install --upgrade pip
-                pip install -r ${{ needs.setup.outputs.REQUIREMENTS_PROD }}
+                pip install -r ${{ env.REQUIREMENTS_PROD }}
 
             - name: Run tests
               run: |
-                pytest ${{ env.TEST_FOLDER }}
+                pytest ${{ env.TEST_FOLDER }} --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
 
             - name: Validate Terraform
               run: |

@@ -2,4 +2,4 @@ python_version: '3.11'
 test_folder: 'app'
 requirements:
   production: 'app/requirements.txt'
-  test: 'app/requirements-test.txt'
+  test: 'app/requirements.txt'
