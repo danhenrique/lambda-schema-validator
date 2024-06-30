@@ -13,6 +13,7 @@ env:
   TEST_FOLDER: "another_value"
   REQUIREMENTS_PROD: "app/requirements.txt"
   REQUIREMENTS_TEST: "app/requirements-test.txt"
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
     validate-lambda-code:
@@ -75,6 +76,6 @@ jobs:
         steps:
             - name: Check out repository
               uses: actions/checkout@v2
-              
+
             - name: Create Pull Request
               run: gh pr create --title "Auto-generated Pull Request" --body "This PR is created automatically by the CI pipeline." --base develop --head ${{ github.ref }}
