@@ -29,10 +29,10 @@ jobs:
             - name: Set output variable
               id: config
               run: |
-                echo "::set-output name=PYTHON_VERSION::${{ env.PYTHON_VERSION }}"
-                echo "::set-output name=TEST_FOLDER::${{ env.TEST_FOLDER }}"
-                echo "::set-output name=REQUIREMENTS_PROD::${{ env.REQUIREMENTS_PROD }}"
-                echo "::set-output name=REQUIREMENTS_TEST::${{ env.REQUIREMENTS_TEST }}"
+                echo "PYTHON_VERSION=${{ env.PYTHON_VERSION }}" >> "$GITHUB_OUTPUT"
+                echo "TEST_FOLDER=${{ env.TEST_FOLDER }}" >> "$GITHUB_OUTPUT"
+                echo "REQUIREMENTS_PROD=${{ env.REQUIREMENTS_PROD }}" >> "$GITHUB_OUTPUT"
+                echo "REQUIREMENTS_TEST=${{ env.REQUIREMENTS_TEST }}" >> "$GITHUB_OUTPUT"
 
     test:
         runs-on: ubuntu-latest
@@ -48,7 +48,7 @@ jobs:
 
             - name: Debug - Print Environment Variables
               run: |
-                echo "PYTHON_VERSION=${{ needs.setup.outputs.PYTHON_VERSION }}"
+                echo "PYTHON_VERSION=${{ needs.setup.steps.config.outputs.PYTHON_VERSION }}"
                 echo "TEST_FOLDER=${{ needs.setup.outputs.TEST_FOLDER }}"
                 echo "REQUIREMENTS_PROD=${{ needs.setup.outputs.REQUIREMENTS_PROD }}"
                 echo "REQUIREMENTS_TEST=${{ needs.setup.outputs.REQUIREMENTS_TEST }}"
