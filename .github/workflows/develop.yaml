@@ -81,6 +81,11 @@ jobs:
           cd infra
           terraform init
 
+      - name: Terraform validate
+        run: |
+          cd infra
+          terraform validate
+
       - name: Terraform plan (destroy)
         if: env.DESTROY == 'true'
         run: |
