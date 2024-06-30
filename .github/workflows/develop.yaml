@@ -35,9 +35,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          cd app
-          mkdir -p dist
-          pip install -r ${{ env.REQUIREMENTS_PROD }} --target ./dist
+          mkdir -p app/dist
+          pip install -r ${{ env.REQUIREMENTS_PROD }} --target app/dist
 
       - name: Package Lambda function
         run: |
