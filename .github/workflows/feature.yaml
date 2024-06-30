@@ -1,59 +1,83 @@
 name: CI Build and Test
 
 on:
-  push:
-    branches:
-      - 'feature*'
+    push:
+      branches:
+        - 'feature'
+        - 'feature/**'
+        - 'feature-**'
+        - 'feature_**'
+
+env:
+  PYTHON_VERSION: "3.X"
+  TEST_FOLDER: "another_value"
+  REQUIREMENTS_PROD: "app/requirements.txt"
+  REQUIREMENTS_TEST: "app/requirements-test.txt"
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+    validate-lambda-code:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v2
 
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v2
+            - name: Read Configuration
+              run: |
+                pip install pyyaml
+                python .github/scripts/read_config.py            
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
+            # - name: Set output variable
+            #   id: config
+            #   run: |
+            #     echo "PYTHON_VERSION=${{ env.PYTHON_VERSION }}" >> "$GITHUB_OUTPUT"
+            #     echo "TEST_FOLDER=${{ env.TEST_FOLDER }}" >> "$GITHUB_OUTPUT"
+            #     echo "REQUIREMENTS_PROD=${{ env.REQUIREMENTS_PROD }}" >> "$GITHUB_OUTPUT"
+            #     echo "REQUIREMENTS_TEST=${{ env.REQUIREMENTS_TEST }}" >> "$GITHUB_OUTPUT"
 
-      - name: Read Configuration
-        run: |
-          pip install pyyaml
-          python read_config.py
+            - name: Set up Python (from config)
+              uses: actions/setup-python@v2
+              with:
+                python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Debug - Print Environment Variables
-        run: |
-          echo "PYTHON_VERSION=${{ env.PYTHON_VERSION }}"
-          echo "TEST_FOLDER=${{ env.TEST_FOLDER }}"
-          echo "REQUIREMENTS_PROD=${{ env.REQUIREMENTS_PROD }}"
-          echo "REQUIREMENTS_TEST=${{ env.REQUIREMENTS_TEST }}"
+            - name: Install dependencies
+              run: |
+                python -m pip install --upgrade pip
+                pip install -r ${{ env.REQUIREMENTS_PROD }}
 
-      - name: Set up Python (from config)
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+            - name: Run tests
+              run: |
+                pytest ${{ env.TEST_FOLDER }} --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r ${{ env.REQUIREMENTS_PROD }}
+    validate-terraform:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v2
 
-      - name: Run tests
-        run: |
-          pytest ${{ env.TEST_FOLDER }}
+            - name: Terraform FMT
+              run: |
+                cd infra
+                terraform fmt -check
 
-      - name: Validate Terraform
-        run: |
-          terraform fmt -check
-          terraform validate
+            - name: Terraform init
+              run: |
+                cd infra
+                terraform init
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
-        with:
-          branch: develop
-          commit-message: Create Pull Request for feature branch
-          title: Pull Request from feature branch
-          body: Auto-generated Pull Request from feature branch
-          labels: feature
+            - name: Terraform validate
+              run: |
+                cd infra
+                terraform validate
+
+    create-pull-request:
+        runs-on: ubuntu-latest
+        needs: [validate-lambda-code, validate-terraform]
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v2
+
+            - name: create pull request
+              run: gh pr create -B main -H ${{ github.ref }} --title 'Merge branch_to_merge into base_branch' --body 'Created by Github action'
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
