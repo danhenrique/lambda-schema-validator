@@ -64,6 +64,16 @@ jobs:
                 cd infra
                 terraform fmt -check
 
+            - name: Terraform Init
+              run: |
+                cd infra
+                terraform init
+
+            - name: Terraform Validate
+              run: |
+                cd infra
+                terraform validate
+
     create-pull-request:
         runs-on: ubuntu-latest
         needs: [validate-lambda-code, validate-terraform]
